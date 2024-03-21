@@ -16,6 +16,7 @@
 using System;
 using Newtonsoft.Json.Linq;
 using TinCan.Json;
+using System.Collections.Generic;
 
 namespace TinCan
 {
@@ -28,6 +29,7 @@ namespace TinCan
         public StatementTarget target { get; set; }
         public Result result { get; set; }
         public Context context { get; set; }
+        public List<Attachment> attachments { get; set; }
         public Nullable<DateTime> timestamp { get; set; }
 
         public StatementBase() { }
@@ -84,6 +86,14 @@ namespace TinCan
             {
                 context = (Context)jobj.Value<JObject>("context");
             }
+            if (jobj["attachments"] != null)
+            {
+                attachments = new List<Attachment>();
+                foreach (JObject jattachment in jobj["attachments"])
+                {
+                    attachments.Add((Attachment)jobj.Value<JObject>(jattachment));
+                }
+            }
             if (jobj["timestamp"] != null)
             {
                 timestamp = jobj.Value<DateTime>("timestamp");
@@ -120,7 +130,15 @@ namespace TinCan
             {
                 result.Add("timestamp", timestamp.Value.ToString(ISODateTimeFormat));
             }
-
+            if (attachments != null)
+            {
+                var jattachments = new JArray();
+                foreach (Attachment attachment in attachments)
+                {
+                    jattachments.Add(attachment.ToJObject(version));
+                }
+                result.Add("attachments", jattachments);
+            }
             return result;
         }
     }
